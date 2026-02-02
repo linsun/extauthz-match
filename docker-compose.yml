@@ -30,8 +30,10 @@ services:
   # Backend Service (nginx with static page)
   backend:
     image: nginx:alpine
+    ports:
+      - "8081:80"  # Direct backend access (no auth)
     volumes:
-      - ./backend/index.html:/usr/share/nginx/html/index.html:ro
+      - ./backend:/usr/share/nginx/html:ro
     networks:
       - extauth-network
 
