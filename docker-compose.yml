@@ -1,0 +1,40 @@
+services:
+  # Ext Authz Server
+  authz-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"  # Web UI and WebSocket
+      - "9000:9000"  # gRPC ext_authz service
+    networks:
+      - extauth-network
+    environment:
+      - LOG_LEVEL=info
+
+  # Envoy Proxy
+  envoy:
+    image: envoyproxy/envoy:v1.29-latest
+    ports:
+      - "10000:10000"  # Main proxy port (protected backend)
+      - "9901:9901"    # Admin interface
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
+    command: /usr/local/bin/envoy -c /etc/envoy/envoy.yaml -l info
+    depends_on:
+      - authz-server
+      - backend
+    networks:
+      - extauth-network
+
+  # Backend Service (nginx with static page)
+  backend:
+    image: nginx:alpine
+    volumes:
+      - ./backend/index.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - extauth-network
+
+networks:
+  extauth-network:
+    driver: bridge

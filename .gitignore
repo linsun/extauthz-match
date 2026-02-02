@@ -1,0 +1,9 @@
+web/static/
+*.log
+*.swp
+*.swo
+*~
+.DS_Store
+.vscode/
+.idea/
+server
