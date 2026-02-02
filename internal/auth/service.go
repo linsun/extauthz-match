@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"sync"
@@ -11,14 +10,18 @@ import (
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	authv3 "github.com/envoyproxy/go-control-plane/envoy/service/auth/v3"
 	typev3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
-	"github.com/yuval/extauth-match/internal/websocket"
 	"google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/codes"
 )
 
+// RelayClient interface for dependency injection
+type RelayClient interface {
+	SendRequest(data interface{}) error
+}
+
 type Service struct {
 	authv3.UnimplementedAuthorizationServer
-	hub          *websocket.Hub
+	relayClient  RelayClient
 	pendingReqs  map[string]*PendingRequest
 	mu           sync.RWMutex
 	requestQueue chan *PendingRequest
@@ -35,9 +38,9 @@ type PendingRequest struct {
 	ctx       context.Context
 }
 
-func NewService(hub *websocket.Hub) *Service {
+func NewService(relayClient RelayClient) *Service {
 	s := &Service{
-		hub:          hub,
+		relayClient:  relayClient,
 		pendingReqs:  make(map[string]*PendingRequest),
 		requestQueue: make(chan *PendingRequest, 100),
 	}
@@ -104,7 +107,7 @@ func (s *Service) Check(ctx context.Context, req *authv3.CheckRequest) (*authv3.
 
 func (s *Service) processQueue() {
 	for pendingReq := range s.requestQueue {
-		// Convert to JSON and broadcast via WebSocket
+		// Send encrypted request via relay
 		msg := map[string]interface{}{
 			"id":        pendingReq.ID,
 			"method":    pendingReq.Method,
@@ -114,15 +117,13 @@ func (s *Service) processQueue() {
 			"timestamp": pendingReq.Timestamp.Format(time.RFC3339),
 		}
 
-		data, err := json.Marshal(msg)
-		if err != nil {
-			log.Printf("Failed to marshal request: %v", err)
+		if err := s.relayClient.SendRequest(msg); err != nil {
+			log.Printf("Failed to send request to relay: %v", err)
 			pendingReq.Response <- false
 			continue
 		}
 
-		s.hub.Broadcast <- data
-		log.Printf("Broadcasting request %s to WebSocket clients", pendingReq.ID)
+		log.Printf("Sent encrypted request %s to relay", pendingReq.ID)
 	}
 }
 

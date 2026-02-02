@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/envoyproxy/go-control-plane/envoy v1.36.0
+	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/websocket v1.5.3
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260128011058-8636f8732409
 	google.golang.org/grpc v1.78.0

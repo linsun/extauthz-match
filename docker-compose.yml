@@ -1,16 +1,30 @@
 services:
+  # Relay Server
+  relay-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.relay
+    ports:
+      - "9090:9090"  # Relay WebSocket
+    volumes:
+      - ./web/static:/web/static:ro
+    networks:
+      - extauth-network
+
   # Ext Authz Server
   authz-server:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"  # Web UI and WebSocket
       - "9000:9000"  # gRPC ext_authz service
     networks:
       - extauth-network
     environment:
       - LOG_LEVEL=info
+      - RELAY_URL=ws://relay-server:9090
+    depends_on:
+      - relay-server
 
   # Envoy Proxy
   envoy:

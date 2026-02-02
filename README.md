@@ -6,7 +6,9 @@ A demo project that implements Envoy's external authorization (ext_authz) gRPC i
 
 - 🔐 **Envoy ext_authz gRPC server** - Implements the official Envoy authorization API
 - 📱 **Mobile-friendly swipe UI** - Approve/deny requests with swipe gestures or buttons
-- ⚡ **Real-time WebSocket** - Instant delivery of authorization requests to your browser
+- 🔒 **End-to-end encryption** - AES-256-GCM encryption for secure cloud deployment
+- 🌐 **Cloud-ready relay server** - Multi-tenant WebSocket relay for public deployment
+- ⚡ **Real-time authorization** - Instant delivery of authorization requests
 - 🐳 **One-command setup** - Complete Docker Compose stack
 - ⏱️ **30s timeout** - Auto-deny for requests awaiting approval too long
 
@@ -14,14 +16,13 @@ A demo project that implements Envoy's external authorization (ext_authz) gRPC i
 
 1. **Start everything:**
    ```bash
-   docker compose up --build
+   docker compose up
    ```
 
-2. **Open the swipe UI on your phone/browser:**
-   ```
-   http://localhost:8080
-   ```
-   Or from your phone: `http://<your-ip>:8080`
+2. **Scan the QR code** displayed in the terminal:
+   - The authz server will display an ASCII QR code with a URL
+   - Open this URL on your phone or browser
+   - The encryption key is embedded in the URL fragment (after #) and never sent to the server
 
 3. **Make a request to the protected backend:**
    ```bash
@@ -32,94 +33,122 @@ A demo project that implements Envoy's external authorization (ext_authz) gRPC i
 
 ## Architecture
 
+### Relay-Based with End-to-End Encryption
+
 ```
-┌─────────────┐
-│   Browser   │ ←─────── WebSocket ────────┐
-│  (Port 8080)│                             │
-└─────────────┘                             │
-                                            │
-┌─────────────┐         ┌──────────────────▼──┐
-│   Client    │────────▶│      Envoy Proxy    │
-│             │         │     (Port 10000)     │
-└─────────────┘         └──────────┬───────────┘
-                                   │
-                          ext_authz│gRPC
-                                   │
-                        ┌──────────▼──────────┐
-                        │  AuthZ Server        │
-                        │  - gRPC: 9000        │
-                        │  - HTTP: 8080        │
-                        └──────────┬───────────┘
-                                   │
-                                   ▼
-                        ┌──────────────────────┐
-                        │  Backend (nginx)     │
-                        └──────────────────────┘
+┌─────────────┐                              ┌──────────────┐
+│   Browser   │◀──── Encrypted WebSocket ───▶│ Relay Server │
+│ (Your Phone)│      (AES-256-GCM)           │  (Port 9090) │
+└─────────────┘                              └──────┬───────┘
+      ▲                                             │
+      │                                             │ Encrypted
+      │ Key from URL#fragment                       │ WebSocket
+      │ (never sent to server)                      │
+      │                                      ┌──────▼───────┐
+      └──────────────────────────────────────│ AuthZ Server │
+                                             │ (Port 9000)  │
+                                             └──────▲───────┘
+                                                    │
+┌─────────────┐         ┌──────────────────┐       │ ext_authz
+│   Client    │────────▶│  Envoy Proxy     │───────┘ gRPC
+│             │         │  (Port 10000)    │
+└─────────────┘         └────────┬─────────┘
+                                 │
+                         ┌───────▼────────┐
+                         │ Backend Server │
+                         │  (Port 8081)   │
+                         └────────────────┘
 ```
+
+### Security Model
+
+- **Encryption Key Generation**: A random 256-bit AES key is generated at authz server startup
+- **Tenant ID**: Derived from SHA256 hash of the encryption key (first 12 bytes = 24 hex chars)
+- **Key Distribution**: Encryption key is embedded in URL fragment (`#key=...`)
+  - Fragment is never sent to relay server (browser-only)
+  - Enables end-to-end encryption without server-side key management
+- **Message Encryption**: All authorization requests/responses encrypted with AES-256-GCM
+- **Multi-Tenancy**: Relay server supports multiple concurrent authz servers via tenant IDs
 
 ## Services
 
-- **authz-server** (ports 8080, 9000) - Go service providing ext_authz gRPC API and web UI
+- **relay-server** (port 9090) - Multi-tenant WebSocket relay for cloud deployment
+- **authz-server** (port 9000) - Go service providing ext_authz gRPC API
 - **envoy** (ports 10000, 9901) - Envoy proxy with ext_authz filter
-- **backend** (internal) - Simple nginx serving a protected page
+- **backend** (port 8081) - Simple nginx serving a protected page
 
 ## Endpoints
 
-- `http://localhost:8080` - Swipe UI for approving/denying requests
+- `http://localhost:9090/s/{tenantID}` - Relay-hosted swipe UI (key in URL fragment)
 - `http://localhost:10000` - Envoy proxy (protected by ext_authz)
 - `http://localhost:9901` - Envoy admin interface
 
 ## How It Works
 
-1. Client makes request to Envoy (`:10000`)
-2. Envoy calls ext_authz gRPC service (`:9000`)
-3. Auth service queues request and broadcasts via WebSocket
-4. User sees request card in browser and swipes
-5. Decision sent back via WebSocket
-6. Auth service responds to Envoy
-7. Envoy allows/denies the original request
+1. **Initialization**:
+   - Authz server generates encryption key and derives tenant ID
+   - Connects to relay server via WebSocket (`/ws/server/{tenantID}`)
+   - Displays QR code with URL containing tenant ID and encryption key
+
+2. **Browser Connection**:
+   - User scans QR code and opens URL
+   - Browser extracts key from URL fragment (client-side only)
+   - Connects to relay via WebSocket (`/ws/client/{tenantID}`)
+
+3. **Authorization Flow**:
+   - Client makes request → Envoy → ext_authz gRPC call
+   - Authz server encrypts request and sends to relay
+   - Relay forwards encrypted message to browser
+   - Browser decrypts, displays swipe card
+   - User swipes → browser encrypts decision → relay → authz server
+   - Authz server decrypts and responds to Envoy
+   - Envoy allows/denies original request
+
+## Cloud Deployment
+
+The relay server can be deployed to any cloud provider with public access:
+
+1. Deploy relay-server with public IP/domain
+2. Update `RELAY_URL` environment variable in docker-compose.yml:
+   ```yaml
+   environment:
+     - RELAY_URL=wss://your-relay-server.com
+   ```
+3. Run `docker compose up` locally
+4. QR code will contain public relay URL for mobile access
 
 ## Development
 
-**Run locally without Docker:**
-
 ```bash
-# Terminal 1: Start auth server
-go run cmd/server/main.go
+# Build locally
+go build -o bin/authz-server ./cmd/server
+go build -o bin/relay-server ./cmd/relay
 
-# Terminal 2: Start Envoy
-envoy -c envoy.yaml
+# Run tests
+go test ./...
 
-# Terminal 3: Start backend
-cd backend && python3 -m http.server 80
+# Format code
+go fmt ./...
 ```
 
-## Testing
+## Project Structure
 
-```bash
-# Approved request (swipe right in UI)
-curl -v http://localhost:10000/
-
-# Denied request (swipe left in UI)
-curl -v http://localhost:10000/api/test
-
-# Multiple rapid requests
-for i in {1..5}; do curl http://localhost:10000/test$i & done
 ```
-
-## Configuration
-
-Edit `envoy.yaml` to customize:
-- Timeout (default: 35s)
-- Routes and clusters
-- Access logging
-
-## Notes
-
-- This is a **demo/proof-of-concept** - not production-ready
-- Requests timeout after 30 seconds if not approved
-- FIFO queue - first request in, first request shown
-- Single user only (no multi-user approval)
+├── cmd/
+│   ├── server/      # AuthZ gRPC server with encryption
+│   └── relay/       # Multi-tenant WebSocket relay
+├── internal/
+│   ├── auth/        # ext_authz gRPC service implementation
+│   ├── crypto/      # AES-256-GCM encryption utilities
+│   ├── relay/       # Relay client for authz server
+│   ├── qrcode/      # ASCII QR code generation
+│   └── websocket/   # (legacy) Local WebSocket hub
+├── web/
+│   └── static/      # HTML/JS swipe UI with Web Crypto API
+├── backend/         # Protected nginx backend
+├── envoy/           # Envoy configuration
+└── docker-compose.yml
+```
 
 ## License
 
