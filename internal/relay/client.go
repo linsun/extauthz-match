@@ -22,7 +22,8 @@ type Client struct {
 	conn            *websocket.Conn
 	decisionHandler DecisionHandler
 	mu              sync.RWMutex
-	done            chan struct{}
+	maxRetries      int
+	retryDelay      time.Duration
 }
 
 // NewClient creates a new relay client
@@ -31,7 +32,8 @@ func NewClient(relayURL, tenantID string, encryptionKey []byte) (*Client, error)
 		relayURL:      relayURL,
 		tenantID:      tenantID,
 		encryptionKey: encryptionKey,
-		done:          make(chan struct{}),
+		maxRetries:    3,
+		retryDelay:    time.Second,
 	}, nil
 }
 
@@ -47,10 +49,14 @@ func (c *Client) Connect() error {
 	wsURL := fmt.Sprintf("%s/ws/server/%s", c.relayURL, c.tenantID)
 
 	var err error
-	c.conn, _, err = websocket.DefaultDialer.Dial(wsURL, nil)
+	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
 	if err != nil {
 		return fmt.Errorf("failed to connect to relay: %w", err)
 	}
+
+	c.mu.Lock()
+	c.conn = conn
+	c.mu.Unlock()
 
 	slog.Info("Connected to relay as server", "tenantID", c.tenantID)
 
@@ -74,29 +80,64 @@ func (c *Client) SendRequest(requestData interface{}) error {
 		return fmt.Errorf("failed to encrypt request: %w", err)
 	}
 
-	// Send to relay
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	// Try to send with retry logic
+	for attempt := 0; attempt <= c.maxRetries; attempt++ {
+		c.mu.RLock()
+		conn := c.conn
+		c.mu.RUnlock()
 
-	if c.conn == nil {
-		return fmt.Errorf("not connected to relay")
+		if conn == nil {
+			return fmt.Errorf("not connected to relay")
+		}
+
+		if err := conn.WriteMessage(websocket.BinaryMessage, ciphertext); err != nil {
+			// If connection is broken, try to reconnect
+			if attempt < c.maxRetries {
+				slog.Warn("Failed to send to relay, attempting reconnect", "attempt", attempt+1, "error", err)
+
+				// Close existing connection
+				c.mu.Lock()
+				if c.conn != nil {
+					c.conn.Close()
+					c.conn = nil
+				}
+				c.mu.Unlock()
+
+				// Wait before retrying
+				time.Sleep(c.retryDelay)
+
+				// Attempt to reconnect
+				if reconnectErr := c.Connect(); reconnectErr != nil {
+					slog.Error("Failed to reconnect to relay", "error", reconnectErr)
+					continue
+				}
+
+				// Retry sending the message
+				continue
+			}
+
+			return fmt.Errorf("failed to send to relay after %d attempts: %w", c.maxRetries+1, err)
+		}
+
+		// Success
+		return nil
 	}
 
-	if err := c.conn.WriteMessage(websocket.BinaryMessage, ciphertext); err != nil {
-		return fmt.Errorf("failed to send to relay: %w", err)
-	}
-
-	return nil
+	return fmt.Errorf("failed to send to relay after all retries")
 }
 
 // readMessages reads encrypted messages from relay (decisions from browser)
 func (c *Client) readMessages() {
-	defer func() {
-		close(c.done)
-	}()
-
 	for {
-		_, message, err := c.conn.ReadMessage()
+		c.mu.RLock()
+		conn := c.conn
+		c.mu.RUnlock()
+
+		if conn == nil {
+			return
+		}
+
+		_, message, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				slog.Error("Relay connection error", "error", err)
@@ -143,11 +184,6 @@ func (c *Client) Close() error {
 		time.Sleep(time.Second)
 		c.conn.Close()
 		c.conn = nil
-	}
-
-	select {
-	case <-c.done:
-	case <-time.After(time.Second):
 	}
 
 	return nil
