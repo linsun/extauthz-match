@@ -75,7 +75,8 @@ gcloud run deploy "${SERVICE_NAME}" \
   --image "${IMAGE}" \
   --region "${REGION}" \
   --platform managed \
-  --allow-unauthenticated
+  --allow-unauthenticated \
+  --max-instances 1
 
 echo "Done. Fetch the URL with:"
 echo "gcloud run services describe ${SERVICE_NAME} --region ${REGION} --format='value(status.url)'"
