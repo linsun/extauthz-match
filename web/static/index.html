@@ -651,6 +651,22 @@
             }
         }
 
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'x') {
+                e.preventDefault();
+                if (!document.getElementById('denyBtn').disabled) {
+                    handleDeny();
+                }
+            } else if (key === 'y') {
+                e.preventDefault();
+                if (!document.getElementById('approveBtn').disabled) {
+                    handleApprove();
+                }
+            }
+        });
+
         connect();
     </script>
 </body>
