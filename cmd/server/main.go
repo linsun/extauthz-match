@@ -25,6 +25,12 @@ func main() {
 		slog.Error("Failed to generate encryption key", "error", err)
 		panic(err)
 	}
+	if os.Getenv("DANGEROUS_STATIC_ENCRYPTION_KEY") == "true" {
+		slog.Warn("Using static encryption key for testing purposes! DO NOT USE IN PRODUCTION!")
+		for i := range encryptionKey {
+			encryptionKey[i] = byte(i)
+		}
+	}
 
 	tenantID := crypto.DeriveTenantID(encryptionKey)
 	encodedKey := crypto.EncodeKey(encryptionKey)

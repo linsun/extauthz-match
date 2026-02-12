@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Protected Backend Service</title>
+    <title>It's a Match! 💕</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/style.css">
@@ -9,66 +9,94 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="emoji">🎉</div>
-            <h1>Hello from Backend!</h1>
+            <div class="emoji">💕</div>
+            <h1>It's a Match!</h1>
         </div>
 
-        <div class="subtitle">Protected Backend Service</div>
+        <div class="subtitle">Someone liked your request!</div>
 
         <div class="content">
             <div class="section">
                 <h2>
-                    <span>🔐 Authorization Status</span>
-                    <span class="badge">APPROVED</span>
+                    <span>💖 Authorization Status</span>
+                    <span class="badge">MATCHED</span>
                 </h2>
-                <p>Your request successfully passed through the ExtAuth Match system!</p>
+                <p>Your request was swiped right! You've been matched with access to this protected service.</p>
                 <div class="status">
                     <div class="status-item">
-                        <span class="checkmark">✓</span>
-                        Request authenticated
+                        <span class="checkmark">❤️</span>
+                        User liked your request
                     </div>
                     <div class="status-item">
-                        <span class="checkmark">✓</span>
-                        User swiped right 👉
+                        <span class="checkmark">❤️</span>
+                        Swipe right approved
                     </div>
                     <div class="status-item">
-                        <span class="checkmark">✓</span>
+                        <span class="checkmark">❤️</span>
                         Access granted
                     </div>
                 </div>
             </div>
 
             <div class="section">
-                <h2>📊 Request Details</h2>
-                <p>This is a protected backend service running behind an Envoy proxy with external authorization enabled.</p>
-            </div>
-
-            <div class="section">
-                <h2>🎨 Demo Resources</h2>
-                <p>The following resources are being served through the authorized connection:</p>
-                <div class="images">
-                    <div class="image-card">🖼️</div>
-                    <div class="image-card">🎬</div>
-                    <div class="image-card">🎵</div>
-                    <div class="image-card">📄</div>
-                    <div class="image-card">📊</div>
-                    <div class="image-card">⚙️</div>
+                <h2>💝 Request History</h2>
+                <p>Watch as your requests get matched in real-time:</p>
+                <div id="matchHistory" class="match-history">
+                    <div class="match-item pending">
+                        <span class="match-label">Request 1</span>
+                        <span class="match-result" data-index="0">⏳</span>
+                    </div>
+                    <div class="match-item pending">
+                        <span class="match-label">Request 2</span>
+                        <span class="match-result" data-index="1">⏳</span>
+                    </div>
+                    <div class="match-item pending">
+                        <span class="match-label">Request 3</span>
+                        <span class="match-result" data-index="2">⏳</span>
+                    </div>
+                    <div class="match-item pending">
+                        <span class="match-label">Request 4</span>
+                        <span class="match-result" data-index="3">⏳</span>
+                    </div>
+                    <div class="match-item pending">
+                        <span class="match-label">Request 5</span>
+                        <span class="match-result" data-index="4">⏳</span>
+                    </div>
+                </div>
+                <div id="matchScore" class="match-score">
+                    <span class="score-hearts">❤️ <span id="heartCount">0</span></span>
+                    <span class="score-separator">vs</span>
+                    <span class="score-x">❌ <span id="xCount">0</span></span>
                 </div>
             </div>
 
             <div class="section">
-                <h2>🚀 How It Works</h2>
+                <h2>🎨 Valentine's Resources</h2>
+                <p>The following love letters are being delivered through your matched connection:</p>
+                <div class="images">
+                    <div class="image-card">💌</div>
+                    <div class="image-card">🌹</div>
+                    <div class="image-card">🍫</div>
+                    <div class="image-card">💐</div>
+                    <div class="image-card">🎁</div>
+                    <div class="image-card">💍</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>💘 How It Works</h2>
                 <ol style="color: #6b7280; font-size: 14px; line-height: 1.8;">
                     <li>Client sends request to Envoy proxy (port 10000)</li>
-                    <li>Envoy calls ext_authz gRPC service for authorization</li>
-                    <li>Auth service broadcasts request to WebSocket clients</li>
-                    <li>User swipes right ✓ to approve or left ✗ to deny</li>
-                    <li>Request completes (200 OK) or returns 403 Forbidden</li>
+                    <li>Envoy asks: "Does someone like this request?"</li>
+                    <li>Auth service sends your profile to the mobile app</li>
+                    <li>User swipes right ❤️ to match or left ❌ to pass</li>
+                    <li>If matched: Request succeeds (200 OK) 💕</li>
+                    <li>If passed: Request denied (403) 💔</li>
                 </ol>
             </div>
 
             <div class="footer">
-                ✨ This is a demo/proof-of-concept implementation of Envoy's external authorization filter
+                💝 ExtAuth Match: Where authorization meets romance
             </div>
         </div>
     </div>

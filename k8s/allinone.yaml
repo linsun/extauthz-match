@@ -19,6 +19,8 @@ spec:
           image: gcr.io/solo-public/extauth-server:0.4
           imagePullPolicy: IfNotPresent
           env:
+            - name: LOG_LEVEL
+              value: debug
             - name: RELAY_URL
               value: wss://extauth-relay-1066515080967.us-central1.run.app
             - name: BROWSER_BASE_URL

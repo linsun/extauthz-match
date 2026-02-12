@@ -15,9 +15,11 @@ func SetupLogging() {
 	var level slog.Level
 	if err := level.UnmarshalText([]byte(logLevel)); err != nil {
 		level = slog.LevelInfo
+		logLevel = "info"
 	}
 
 	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
 		Level: level,
 	})))
+	slog.Info("setting log level", "level", logLevel)
 }

@@ -19,8 +19,8 @@ A demo project that implements Envoy's external authorization (ext_authz) gRPC i
    docker compose up
    ```
 
-2. **Open swipe UI** Open the url from the logs in your browser to see the swipe UI.
-
+2. **Open swipe UI** Open the url from the logs in your browser to see the swipe UI. For local dev it should be constant and set to http://localhost:9090/s/630dcd2966c4336691125448#key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8= 
+you can see it in `docker logs extauth-match-authz-server-1`
 3. **Make a request to the protected backend:**
    ```bash
    curl http://localhost:10000/
@@ -62,7 +62,7 @@ kubectl apply -f "https://raw.githubusercontent.com/yuval-k/extauthz-match/refs/
 3. **Make a request to the protected backend:**
 
 ```bash
-kubectl port-forward svc/extauth-gateway 8080
+kubectl port-forward svc/extauth-gateway 8080 &
 curl http://localhost:8080/ # or open this in the browser
 ```
 

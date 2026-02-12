@@ -23,18 +23,19 @@ services:
     environment:
       - LOG_LEVEL=info
       - RELAY_URL=ws://relay-server:9090
+      - DANGEROUS_STATIC_ENCRYPTION_KEY=true
     depends_on:
       - relay-server
 
   # Envoy Proxy
   envoy:
-    image: envoyproxy/envoy:v1.29-latest
+    image: envoyproxy/envoy:v1.37.0
     ports:
       - "10000:10000"  # Main proxy port (protected backend)
       - "9901:9901"    # Admin interface
     volumes:
       - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
-    command: /usr/local/bin/envoy -c /etc/envoy/envoy.yaml -l info
+    command: /usr/local/bin/envoy -c /etc/envoy/envoy.yaml -l info --file-flush-interval-msec 100
     depends_on:
       - authz-server
       - backend

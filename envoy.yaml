@@ -35,9 +35,17 @@ static_resources:
               domains: ["*"]
               routes:
               - match:
+                  prefix: "/protected"
+                route:
+                  cluster: backend_service
+              - match:
                   prefix: "/"
                 route:
                   cluster: backend_service
+                typed_per_filter_config:
+                  envoy.filters.http.ext_authz:
+                    "@type": type.googleapis.com/envoy.config.route.v3.FilterConfig
+                    disabled: true
 
   clusters:
   - name: ext_authz

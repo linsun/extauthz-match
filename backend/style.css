@@ -6,7 +6,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 50%, #f67280 100%);
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -42,7 +42,7 @@ body {
 }
 
 h1 {
-    color: #22c55e;
+    color: #ec4899;
     font-size: 36px;
     margin-bottom: 10px;
 }
@@ -80,8 +80,8 @@ h1 {
 }
 
 .status {
-    background: #f0fdf4;
-    border-left: 4px solid #22c55e;
+    background: #fef2f2;
+    border-left: 4px solid #ec4899;
     padding: 15px;
     border-radius: 8px;
     margin-top: 10px;
@@ -92,12 +92,12 @@ h1 {
     align-items: center;
     gap: 10px;
     font-size: 14px;
-    color: #166534;
+    color: #be185d;
     margin: 8px 0;
 }
 
 .checkmark {
-    color: #22c55e;
+    color: #ec4899;
     font-weight: bold;
     font-size: 18px;
 }
@@ -132,11 +132,91 @@ h1 {
 
 .badge {
     display: inline-block;
-    background: #dbeafe;
-    color: #1e40af;
+    background: #fce7f3;
+    color: #be185d;
     padding: 4px 10px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
     margin-left: 8px;
+}
+
+/* Valentine's Day Match History Styles */
+.match-history {
+    background: #fff7ed;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.match-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin: 8px 0;
+    background: white;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.match-item.pending {
+    border-color: #fbbf24;
+}
+
+.match-item.matched {
+    border-color: #ec4899;
+    background: #fef2f2;
+    animation: heartbeat 0.5s ease;
+}
+
+.match-item.rejected {
+    border-color: #6b7280;
+    background: #f3f4f6;
+    opacity: 0.6;
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.05); }
+    50% { transform: scale(1); }
+    75% { transform: scale(1.05); }
+}
+
+.match-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.match-result {
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.match-score {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    margin-top: 25px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.score-hearts {
+    color: #ec4899;
+}
+
+.score-x {
+    color: #6b7280;
+}
+
+.score-separator {
+    color: #9ca3af;
+    font-size: 18px;
 }
