@@ -154,6 +154,86 @@
             color: #be185d;
         }
 
+        /* Social Share Buttons */
+        .share-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #fce7f3 0%, #fff1f2 100%);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .share-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #be185d;
+            margin-bottom: 15px;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .share-btn-linkedin {
+            background: #0077b5;
+        }
+
+        .share-btn-linkedin:hover {
+            background: #006399;
+        }
+
+        .share-btn-twitter {
+            background: #1da1f2;
+        }
+
+        .share-btn-twitter:hover {
+            background: #1a8cd8;
+        }
+
+        .share-btn-facebook {
+            background: #1877f2;
+        }
+
+        .share-btn-facebook:hover {
+            background: #166fe5;
+        }
+
+        .share-btn-reddit {
+            background: #ff4500;
+        }
+
+        .share-btn-reddit:hover {
+            background: #e03d00;
+        }
+
+        .share-icon {
+            font-size: 18px;
+        }
+
         @media (max-width: 480px) {
             .help-btn {
                 top: 15px;
@@ -169,6 +249,15 @@
 
             .modal h2 {
                 font-size: 24px;
+            }
+
+            .share-buttons {
+                flex-direction: column;
+            }
+
+            .share-btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -267,6 +356,31 @@
                 </ol>
             </div>
 
+            <div class="share-section">
+                <div class="share-title">💝 Share the Love!</div>
+                <p style="color: #9ca3af; font-size: 14px; margin-bottom: 20px;">
+                    Show the world the most romantic authorization system ever built!
+                </p>
+                <div class="share-buttons">
+                    <a href="#" class="share-btn share-btn-linkedin" id="linkedinShare" target="_blank" rel="noopener">
+                        <span class="share-icon">in</span>
+                        Share on LinkedIn
+                    </a>
+                    <a href="#" class="share-btn share-btn-twitter" id="twitterShare" target="_blank" rel="noopener">
+                        <span class="share-icon">🐦</span>
+                        Share on Twitter
+                    </a>
+                    <a href="#" class="share-btn share-btn-facebook" id="facebookShare" target="_blank" rel="noopener">
+                        <span class="share-icon">f</span>
+                        Share on Facebook
+                    </a>
+                    <a href="#" class="share-btn share-btn-reddit" id="redditShare" target="_blank" rel="noopener">
+                        <span class="share-icon">↗</span>
+                        Share on Reddit
+                    </a>
+                </div>
+            </div>
+
             <div class="footer">
                 💝 ExtAuth Match: Where authorization meets romance <span class="version-badge">v1.0.0</span>
                             <p style="text-align: center; margin-top: 30px; color: #ec4899; font-size: 18px;">
@@ -286,7 +400,7 @@
             <p>ExtAuth Match turns boring API authorization into a delightful swipe-right experience. Perfect for Valentine's Day demos, tech conferences, or showing your infrastructure some love! 💖</p>
 
             <h3>🎯 What Is This?</h3>
-            <p>This is a live demo of Envoy's external authorization (ext_authz) system with a Tinder-like mobile interface. When clients make requests through your API gateway, they appear as "cards" on your phone that you can swipe to approve or deny.</p>
+            <p>This is a live demo of Agentgateway / Envoy's external authorization (ext_authz) system with a Tinder-like mobile interface. When clients make requests through your API gateway, they appear as "cards" on your phone that you can swipe to approve or deny.</p>
 
             <h3>💘 How To Use</h3>
             <ol>
@@ -364,6 +478,23 @@
                 toggleHelp();
             }
         });
+
+        // Social share functionality
+        const shareUrl = encodeURIComponent('https://github.com/yuval-k/extauthz-match');
+        const shareTitle = encodeURIComponent('💕 ExtAuth Match - The Most Romantic Authorization System!');
+        const shareText = encodeURIComponent('Check out ExtAuth Match - where API authorization meets swipe-right UX! 💘 Built with Envoy ext_authz and end-to-end encryption. Perfect for Valentine\'s Day demos! #DevOps #APIGateway #Envoy');
+        
+        // LinkedIn
+        document.getElementById('linkedinShare').href = `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`;
+        
+        // Twitter/X
+        document.getElementById('twitterShare').href = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
+        
+        // Facebook
+        document.getElementById('facebookShare').href = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+        
+        // Reddit
+        document.getElementById('redditShare').href = `https://reddit.com/submit?url=${shareUrl}&title=${shareTitle}`;
     </script>
 </body>
 </html>
