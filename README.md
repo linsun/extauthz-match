@@ -9,22 +9,7 @@ A demo project that implements Envoy's external authorization (ext_authz) gRPC i
 - 🔒 **End-to-end encryption** - AES-256-GCM encryption for secure cloud deployment
 - 🌐 **Cloud-ready relay server** - Multi-tenant WebSocket relay for public deployment
 - ⚡ **Real-time authorization** - Instant delivery of authorization requests
-- 🐳 **One-command setup** - Complete Docker Compose stack
-- ⏱️ **30s timeout** - Auto-deny for requests awaiting approval too long
-
-## Quick Start - Local Deployment
-
-1. **Start everything:**
-   ```bash
-   docker compose up
-   ```
-
-2. **Open swipe UI** Open the url from the logs in your browser to see the swipe UI. For local dev it should be constant and set to http://localhost:9090/s/630dcd2966c4336691125448#key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8= 
-you can see it in `docker logs extauth-match-authz-server-1 2>/dev/null`
-3. **Make a request to the protected backend:**
-   ```bash
-   curl http://localhost:10000/
-   ```
+- 🐳 **Quick setup** - On k8s/kind or docker-compose stack
 
 ## Quick Start - Kubernetes Deployment (no need to clone repo)
 
@@ -54,19 +39,34 @@ kubectl create configmap backend-html \
 kubectl apply -f "https://raw.githubusercontent.com/yuval-k/extauthz-match/refs/heads/master/k8s/allinone.yaml"
 ```
 
-2. **Scan the QR code** displayed in the the logs `kubectl logs deployment/extauth-server`:
-   - The authz server will display an ASCII QR code with a URL
-   - Open this URL on your phone or browser
-   - The encryption key is embedded in the URL fragment (after #) and never sent to the server
-
-3. **Make a request to the protected backend:**
+2. **Browse to the gatewway**
 
 ```bash
 kubectl port-forward svc/extauth-gateway 8080 &
 open http://localhost:8080/ # open this in the browser
 ```
 
-1. **Swipe right (✓) to approve or left (✗) to deny!**
+3. **Scan the QR code** displayed in the page (also appears in the the logs `kubectl logs deployment/extauth-server`):
+   - The authz server will display an ASCII QR code with a URL (this is unique URL for each authz server instance)
+   - Open this URL on your phone or browser
+   - The encryption key is embedded in the URL fragment (after #) and never sent to the server
+
+4. **Swipe right (✓) to approve or left (✗) to deny!**
+As the page in the browser sends requests to the gateway, they will appear as cards in the swipe UI. Your swipes will determine whether the requests are allowed or denied in real-time.
+
+## Quick Start - Local Deployment
+
+1. **Start everything:**
+   ```bash
+   docker compose up
+   ```
+
+2. **Open swipe UI** Open the url from the logs in your browser to see the swipe UI. For local dev it should be constant and set to http://localhost:9090/s/630dcd2966c4336691125448#key=AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8= 
+you can see it in `docker logs extauth-match-authz-server-1 2>/dev/null`
+3. **Make a request to the protected backend:**
+   ```bash
+   curl http://localhost:10000/
+   ```
 
 ## Architecture
 

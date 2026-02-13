@@ -70,6 +70,8 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
             cursor: grab;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
@@ -865,9 +867,9 @@
 
         function setupCardListeners(card) {
             card.addEventListener('mousedown', handleStart);
-            card.addEventListener('touchstart', handleStart);
+            card.addEventListener('touchstart', handleStart, { passive: false });
             document.addEventListener('mousemove', handleMove);
-            document.addEventListener('touchmove', handleMove);
+            document.addEventListener('touchmove', handleMove, { passive: false });
             document.addEventListener('mouseup', handleEnd);
             document.addEventListener('touchend', handleEnd);
         }
