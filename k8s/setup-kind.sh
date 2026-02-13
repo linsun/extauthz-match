@@ -17,19 +17,12 @@ helm upgrade -i --create-namespace \
 helm upgrade -i -n agentgateway-system agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
 --version v2.2.0-main
 
-#helm install kgateway-crds oci://cr.kgateway.dev/kgateway-dev/charts/kgateway-crds --version v2.2.0-rc.2 --namespace kgateway-system --create-namespace
-#helm install kgateway oci://cr.kgateway.dev/kgateway-dev/charts/kgateway --version v2.2.0-rc.2 --namespace kgateway-system --create-namespace
-
 kubectl create configmap backend-html \
   --from-file="$SCRIPT_DIR/../backend/index.html" \
   --from-file="$SCRIPT_DIR/../backend/script.js" \
   --from-file="$SCRIPT_DIR/../backend/style.css"
 
 kubectl apply -f "$SCRIPT_DIR/allinone.yaml"
-#kubectl apply -f "$SCRIPT_DIR/gateway-and-route.yaml"
-#kubectl apply -f "$SCRIPT_DIR/example-backend.yaml"
-#kubectl apply -f "$SCRIPT_DIR/agentgateway-policy.yaml"
-#kubectl apply -f "$SCRIPT_DIR/authz-server-deployment.yaml"
 
 kubectl wait --for=condition=Ready gateway extauth-gateway --timeout=90s
 kubectl logs deployment/extauth-server

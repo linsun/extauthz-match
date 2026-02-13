@@ -4,9 +4,178 @@
     <title>It's a Match! 💕</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="version" content="1.0.0">
     <link rel="stylesheet" href="/style.css">
+    <style>
+        /* Help Modal Styles */
+        .help-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(236, 72, 153, 0.9);
+            border: 3px solid white;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .help-btn:hover {
+            background: rgba(190, 24, 93, 0.9);
+            transform: scale(1.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: transparent;
+            font-size: 30px;
+            cursor: pointer;
+            color: #9ca3af;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #ec4899;
+        }
+
+        .modal h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #ec4899;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 25px 0 12px 0;
+        }
+
+        .modal p {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #4b5563;
+            margin-bottom: 15px;
+        }
+
+        .modal ul {
+            margin: 10px 0 20px 0;
+            padding-left: 25px;
+        }
+
+        .modal li {
+            font-size: 15px;
+            line-height: 1.9;
+            color: #4b5563;
+            margin-bottom: 8px;
+        }
+
+        .modal ol {
+            margin: 10px 0 20px 0;
+            padding-left: 25px;
+        }
+
+        .modal ol li {
+            font-size: 15px;
+            line-height: 1.9;
+            color: #4b5563;
+            margin-bottom: 10px;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: #fce7f3;
+            color: #be185d;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .security-note {
+            background: #fef2f2;
+            border-left: 4px solid #ec4899;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .security-note p {
+            margin: 0;
+            font-size: 14px;
+            color: #be185d;
+        }
+
+        @media (max-width: 480px) {
+            .help-btn {
+                top: 15px;
+                right: 15px;
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+
+            .modal-content {
+                padding: 30px 20px;
+            }
+
+            .modal h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <button class="help-btn" onclick="toggleHelp()" aria-label="Help">?</button>
+    
     <div class="container">
         <div class="header">
             <div class="emoji">💕</div>
@@ -99,13 +268,103 @@
             </div>
 
             <div class="footer">
-                💝 ExtAuth Match: Where authorization meets romance
+                💝 ExtAuth Match: Where authorization meets romance <span class="version-badge">v1.0.0</span>
+                            <p style="text-align: center; margin-top: 30px; color: #ec4899; font-size: 18px;">
+                💕 Made with love by the kgateway/agentgateway community 💕
+            </p>
             </div>
+        </div>
+    </div>
+
+    <div class="modal" id="helpModal" onclick="closeModalOnBackdrop(event)">
+        <div class="modal-content">
+            <button class="modal-close" onclick="toggleHelp()">&times;</button>
+            <h2>💕 ExtAuth Match <span class="version-badge">v1.0.0</span></h2>
+            
+            <p><strong>Welcome to the most romantic authorization system ever built!</strong></p>
+            
+            <p>ExtAuth Match turns boring API authorization into a delightful swipe-right experience. Perfect for Valentine's Day demos, tech conferences, or showing your infrastructure some love! 💖</p>
+
+            <h3>🎯 What Is This?</h3>
+            <p>This is a live demo of Envoy's external authorization (ext_authz) system with a Tinder-like mobile interface. When clients make requests through your API gateway, they appear as "cards" on your phone that you can swipe to approve or deny.</p>
+
+            <h3>💘 How To Use</h3>
+            <ol>
+                <li><strong>Scan the QR code</strong> with your phone (or open the link on this device)</li>
+                <li><strong>Watch the requests appear</strong> - This page automatically sends 5 test requests</li>
+                <li><strong>Swipe right ❤️</strong> to approve a request (returns 200 OK)</li>
+                <li><strong>Swipe left ❌</strong> to deny a request (returns 403 Forbidden)</li>
+                <li><strong>Watch the results</strong> update in real-time on this page!</li>
+            </ol>
+
+            <h3>🔐 Security Features</h3>
+            <div class="security-note">
+                <p><strong>🔒 End-to-End Encrypted:</strong> All communication uses AES-256-GCM encryption. The relay server never sees your request data - only encrypted messages pass through!</p>
+            </div>
+            <ul>
+                <li><strong>Zero-trust architecture:</strong> Encryption key stays on your devices</li>
+                <li><strong>Ephemeral keys:</strong> New key generated on each server restart</li>
+                <li><strong>URL fragment security:</strong> Key never sent to servers (stays client-side)</li>
+            </ul>
+
+            <h3>🏗️ Architecture</h3>
+            <p>The system has three main components:</p>
+            <ul>
+                <li><strong>Gateway (Agentgateway or envoy):</strong> Intercepts requests and asks for authorization</li>
+                <li><strong>AuthZ Server:</strong> Handles authorization logic and encryption</li>
+                <li><strong>Relay Server:</strong> Routes encrypted messages between server and mobile</li>
+                <li><strong>Mobile UI:</strong> Beautiful swipe interface for approvals</li>
+            </ul>
+
+            <h3>💝 Perfect For</h3>
+            <ul>
+                <li>Valentine's Day tech demos and marketing</li>
+                <li>Conference talks about API security</li>
+                <li>Teaching ext_authz concepts in a fun way</li>
+                <li>Impressing your DevOps crush 😉</li>
+            </ul>
+
+            <h3>🔄 Troubleshooting</h3>
+            <p>If requests aren't showing up:</p>
+            <ul>
+                <li>Make sure your phone is connected (check for "✓ Connected" status)</li>
+                <li>Try the "Try Again" button to resend requests</li>
+                <li>Verify the QR code scanned correctly</li>
+                <li>Check that the authorization server is running</li>
+            </ul>
+
+            <h3>💌 Learn More</h3>
+            <p>This demo showcases:</p>
+            <ul>
+                <li>Envoy external authorization (ext_authz) gRPC API</li>
+                <li>WebSocket relay architecture for cloud deployment</li>
+                <li>Client-side encryption with Web Crypto API</li>
+            </ul>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="/script.js"></script>
+    <script>
+        function toggleHelp() {
+            const modal = document.getElementById('helpModal');
+            modal.classList.toggle('show');
+        }
+
+        function closeModalOnBackdrop(event) {
+            if (event.target.id === 'helpModal') {
+                toggleHelp();
+            }
+        }
+
+        // Keyboard shortcut: ? to open help
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '?') {
+                e.preventDefault();
+                toggleHelp();
+            }
+        });
+    </script>
 </body>
 </html>
 

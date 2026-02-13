@@ -5,7 +5,6 @@ metadata:
   labels:
     app: extauth-server
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: extauth-server

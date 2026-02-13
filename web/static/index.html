@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ExtAuth Match - Swipe to Authorize</title>
+    <meta name="version" content="1.0.0">
     <style>
         * {
             margin: 0;
@@ -269,6 +270,202 @@
             letter-spacing: 0.5px;
         }
 
+        .error-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.95);
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        .error-state h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #f87171;
+        }
+
+        .error-state p {
+            font-size: 16px;
+            margin-bottom: 15px;
+            opacity: 0.95;
+        }
+
+        .error-state ul {
+            text-align: left;
+            margin: 20px auto;
+            max-width: 400px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .error-state li {
+            margin-bottom: 10px;
+        }
+
+        .help-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            z-index: 1000;
+        }
+
+        .help-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: transparent;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #1f2937;
+        }
+
+        .modal h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        .modal p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #4b5563;
+            margin-bottom: 15px;
+        }
+
+        .modal h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 20px 0 10px 0;
+        }
+
+        .modal ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .modal li {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #4b5563;
+        }
+
+        .keyboard-shortcuts {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .key {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 100;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            z-index: 999;
+        }
+
         @media (max-width: 480px) {
             .card-stack {
                 height: 450px;
@@ -287,10 +484,24 @@
                 height: 60px;
                 font-size: 28px;
             }
+
+            .help-btn {
+                top: 10px;
+                right: 10px;
+                width: 35px;
+                height: 35px;
+                font-size: 18px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
+    <button class="help-btn" onclick="toggleHelp()" aria-label="Help">?</button>
+    
     <div class="header">
         <h1>🔐 ExtAuth Match</h1>
         <div class="status" id="status">Connecting...</div>
@@ -305,18 +516,64 @@
                 <h2>👀 Waiting for requests...</h2>
                 <p>Send a request to your Envoy proxy to see it here</p>
                 <div class="command-box">
-                    <div class="command-label">Try this:</div>
-                    curl http://localhost:10000/
+                    <div class="command-label">Example:</div>
+                    <span id="curlExample">curl http://your-envoy-host:10000/</span>
                 </div>
-                <p style="font-size: 14px; opacity: 0.8; margin-top: 20px;">or run the test script: ./test.sh</p>
+                <p style="font-size: 14px; opacity: 0.8; margin-top: 15px;">
+                    Swipe right or press <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">Y</kbd> to approve
+                    <br>
+                    Swipe left or press <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">X</kbd> to deny
+                </p>
             </div>
         </div>
     </div>
 
     <div class="actions">
-        <button class="action-btn deny" id="denyBtn" onclick="handleDeny()" disabled>✗</button>
-        <button class="action-btn approve" id="approveBtn" onclick="handleApprove()" disabled>✓</button>
+        <button class="action-btn deny" id="denyBtn" onclick="handleDeny()" disabled aria-label="Deny">✗</button>
+        <button class="action-btn approve" id="approveBtn" onclick="handleApprove()" disabled aria-label="Approve">✓</button>
     </div>
+
+    <div class="modal" id="helpModal" onclick="closeModalOnBackdrop(event)">
+        <div class="modal-content">
+            <button class="modal-close" onclick="toggleHelp()">&times;</button>
+            <h2>🔐 ExtAuth Match</h2>
+            <p><strong>Version 1.0.0</strong></p>
+            
+            <p>ExtAuth Match is a mobile-friendly authorization interface for Envoy's external authorization (ext_authz) system. Review and approve/deny API requests in real-time with a swipe interface.</p>
+            
+            <h3>How It Works</h3>
+            <p>When a client makes a request through your Envoy proxy, it appears as a card in this interface. You can:</p>
+            <ul>
+                <li>Swipe right (or click ✓) to approve</li>
+                <li>Swipe left (or click ✗) to deny</li>
+            </ul>
+            
+            <h3>Keyboard Shortcuts</h3>
+            <div class="keyboard-shortcuts">
+                <div class="shortcut-item">
+                    <span>Approve request</span>
+                    <span><span class="key">Y</span> or <span class="key">V</span></span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Deny request</span>
+                    <span class="key">X</span>
+                </div>
+            </div>
+            
+            <h3>Security</h3>
+            <p>All communication is end-to-end encrypted using AES-256-GCM. The encryption key is in your URL fragment and never leaves your device.</p>
+            
+            <h3>Troubleshooting</h3>
+            <p>If you see "Disconnected":</p>
+            <ul>
+                <li>Check that your authorization server is running</li>
+                <li>Verify the URL matches your server's tenant ID</li>
+                <li>Ensure you have network connectivity</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="version">v1.0.0</div>
 
     <script>
         let ws = null;
@@ -329,6 +586,21 @@
         let currentY = 0;
         let encryptionKey = null;
         let tenantID = null;
+        let reconnectAttempts = 0;
+        let maxReconnectAttempts = 5;
+        let debugMode = false; // Set to true for development
+
+        function log(...args) {
+            if (debugMode) {
+                console.log(...args);
+            }
+        }
+
+        function logError(...args) {
+            if (debugMode) {
+                console.error(...args);
+            }
+        }
 
         // Extract encryption key and tenant ID from URL
         function initialize() {
@@ -337,8 +609,7 @@
             const keyB64 = params.get('key');
             
             if (!keyB64) {
-                document.getElementById('status').textContent = '✗ No encryption key in URL';
-                document.getElementById('status').className = 'status disconnected';
+                showError('no-key');
                 return false;
             }
 
@@ -354,13 +625,70 @@
                 const pathParts = window.location.pathname.split('/');
                 tenantID = pathParts[pathParts.length - 1];
 
-                console.log('Initialized with tenant:', tenantID);
+                log('Initialized with tenant:', tenantID);
+                
+                // Set dynamic curl example
+                const protocol = window.location.protocol;
+                const host = window.location.host;
+                const exampleEl = document.getElementById('curlExample');
+                if (exampleEl) {
+                    exampleEl.textContent = `curl ${protocol}//${host}/`;
+                }
+                
                 return true;
             } catch (e) {
-                console.error('Failed to parse encryption key:', e);
-                document.getElementById('status').textContent = '✗ Invalid encryption key';
-                document.getElementById('status').className = 'status disconnected';
+                logError('Failed to parse encryption key:', e);
+                showError('invalid-key');
                 return false;
+            }
+        }
+
+        function showError(errorType) {
+            const statusEl = document.getElementById('status');
+            const cardStack = document.getElementById('cardStack');
+            
+            let errorHtml = '';
+            
+            if (errorType === 'no-key') {
+                statusEl.textContent = '✗ No encryption key in URL';
+                statusEl.className = 'status disconnected';
+                errorHtml = `
+                    <div class="error-state">
+                        <h2>⚠️ Invalid URL</h2>
+                        <p>This page requires an encryption key in the URL.</p>
+                        <p>Please scan the QR code from your authorization server or use the URL provided in the server logs.</p>
+                    </div>
+                `;
+            } else if (errorType === 'invalid-key') {
+                statusEl.textContent = '✗ Invalid encryption key';
+                statusEl.className = 'status disconnected';
+                errorHtml = `
+                    <div class="error-state">
+                        <h2>⚠️ Invalid Key</h2>
+                        <p>The encryption key in the URL is malformed.</p>
+                        <p>Please verify you're using the complete URL from your authorization server.</p>
+                    </div>
+                `;
+            } else if (errorType === 'connection-failed') {
+                statusEl.textContent = '✗ Connection Failed';
+                statusEl.className = 'status disconnected';
+                errorHtml = `
+                    <div class="error-state">
+                        <h2>❌ Connection Failed</h2>
+                        <p>Unable to connect to the relay server after ${maxReconnectAttempts} attempts.</p>
+                        <h3>Troubleshooting Steps:</h3>
+                        <ul>
+                            <li>Verify your authorization server is running</li>
+                            <li>Check your network connection</li>
+                            <li>Ensure the relay server is accessible</li>
+                            <li>Try refreshing the page</li>
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (cardStack && errorHtml) {
+                cardStack.innerHTML = errorHtml;
             }
         }
 
@@ -429,11 +757,13 @@
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws/client/${tenantID}`;
             
+            log('Connecting to:', wsUrl);
             ws = new WebSocket(wsUrl);
             ws.binaryType = 'arraybuffer';
 
             ws.onopen = () => {
-                console.log('WebSocket connected');
+                log('WebSocket connected');
+                reconnectAttempts = 0;
                 document.getElementById('status').textContent = '✓ Connected';
                 document.getElementById('status').className = 'status connected';
             };
@@ -442,25 +772,33 @@
                 try {
                     // Decrypt message
                     const request = await decrypt(event.data);
-                    console.log('Received request:', request);
+                    log('Received request:', request);
                     pendingRequests.push(request);
                     if (!currentCard) {
                         showNextCard();
                     }
                 } catch (e) {
-                    console.error('Failed to decrypt message:', e);
+                    logError('Failed to decrypt message:', e);
                 }
             };
 
             ws.onclose = () => {
-                console.log('WebSocket disconnected');
+                log('WebSocket disconnected');
                 document.getElementById('status').textContent = '✗ Disconnected';
                 document.getElementById('status').className = 'status disconnected';
-                setTimeout(connect, 2000);
+                
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    const delay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 10000);
+                    log(`Reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
+                    setTimeout(connect, delay);
+                } else {
+                    showError('connection-failed');
+                }
             };
 
             ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
+                logError('WebSocket error:', error);
             };
         }
 
@@ -470,12 +808,16 @@
                 document.getElementById('cardStack').innerHTML = `
                     <div class="empty-instructions">
                         <h2>👀 Waiting for requests...</h2>
-                        <p>Send a request to your Envoy proxy to see it here</p>
+                        <p>Open the the Gateway URL in the browser and see the requests to authorize appear here</p>
                         <div class="command-box">
-                            <div class="command-label">Try this:</div>
-                            curl http://localhost:10000/
+                            <div class="command-label">Example:</div>
+                            open http://localhost:8080/
                         </div>
-                        <p style="font-size: 14px; opacity: 0.8; margin-top: 20px;">or run the test script: ./test.sh</p>
+                        <p style="font-size: 14px; opacity: 0.8; margin-top: 15px;">
+                            Swipe right or press <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">Y</kbd> to approve
+                            <br>
+                            Swipe left or press <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">X</kbd> to deny
+                        </p>
                     </div>
                 `;
                 updateButtonState();
@@ -491,6 +833,9 @@
 
             const cardHtml = `
                 <div class="card" id="currentCard">
+                    <div class="loading-overlay" id="loadingOverlay">
+                        <div class="spinner"></div>
+                    </div>
                     <div class="card-content">
                         <div class="method ${request.method}">${request.method}</div>
                         <div class="path">${request.path}</div>
@@ -614,6 +959,12 @@
             const card = document.getElementById('currentCard');
             if (!card || !currentCard) return;
 
+            // Show loading overlay
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('show');
+            }
+
             card.classList.add('swiped');
             const direction = approved ? 1000 : -1000;
             card.style.transform = `translateX(${direction}px) rotate(${direction / 10}deg)`;
@@ -644,10 +995,21 @@
                     };
                     const encrypted = await encrypt(decision);
                     ws.send(encrypted);
-                    console.log(`Sent encrypted decision for ${requestId}: ${approved ? 'approved' : 'denied'}`);
+                    log(`Sent encrypted decision for ${requestId}: ${approved ? 'approved' : 'denied'}`);
                 } catch (e) {
-                    console.error('Failed to encrypt decision:', e);
+                    logError('Failed to encrypt decision:', e);
                 }
+            }
+        }
+
+        function toggleHelp() {
+            const modal = document.getElementById('helpModal');
+            modal.classList.toggle('show');
+        }
+
+        function closeModalOnBackdrop(event) {
+            if (event.target.id === 'helpModal') {
+                toggleHelp();
             }
         }
 
@@ -664,6 +1026,9 @@
                 if (!document.getElementById('approveBtn').disabled) {
                     handleApprove();
                 }
+            } else if (key === '?') {
+                e.preventDefault();
+                toggleHelp();
             }
         });
 
